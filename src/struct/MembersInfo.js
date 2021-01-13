@@ -1,6 +1,9 @@
 const {
     RichEmbed,
 } = require('discord.js');
+const {
+    ECONOMY_LOGGER_CHANNEL_ID,
+} = require('../util/constants.js');
 const ms = require('ms');
 const MemberData = require('../data/models/memberdata.js');
 const MuteData = require('../data/models/mutedata.js');
@@ -21,6 +24,23 @@ module.exports = class MemberInfo {
             }
         }
         return embed;
+    }
+    updateEconomyLog(message, member, amount, reason) {
+        const EconomyLogChannel = message.guild.channels.find(channel => channel.id === ECONOMY_LOGGER_CHANNEL_ID);
+        const embed = this.constructEmbed(`${member} received ${amount} \nReason: ${reason}`, '');
+        embed.setTimestamp(message.createdAt);
+        EconomyLogChannel.send(embed);
+    }
+    bank(message) {
+        const embed = this.constructEmbed(`${this.name}, your total balance is ${this.cash}.`, '', null, null);
+        return message.channel.send(embed);
+    }
+    addCash(message, amount, reason) {
+        this.cash += amount;
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> console.log('added cash to database'));
+        const embed = this.constructEmbed(`${this.name}, added ${amount} to your bank \nReason: ${reason}.`, `Your total balance is now ${this.cash}`, null, null);
+        this.updateEconomyLog(message, this.name, amount, reason);
+        return message.channel.send(embed);
     }
     setSteamId(message, args) {
         this.steamid = args[0];

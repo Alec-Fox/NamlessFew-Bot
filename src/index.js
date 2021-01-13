@@ -92,6 +92,7 @@ client.on('guildMemberAdd', (member) => {
                 mutecount: 0,
                 mutehistory: ['\u200B'],
                 steamid: '',
+                cash: 0,
             });
             newMemberData.save()
                 .then(newMember => Object.assign(client.memberinfo, { [member.id]: new MemberInfo(newMember._doc) }))

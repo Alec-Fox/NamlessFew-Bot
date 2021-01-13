@@ -9,6 +9,7 @@ module.exports = {
     SUGGESTIONS_CHANNEL_ID: '798684723756269579',
     MODERATOR_CHANNEL_ID: '798685141387575336',
     LOGGER_CHANNEL_ID: '798681673129787433',
+    ECONOMY_LOGGER_CHANNEL_ID: '798840061269245973',
     NEW_MEMBER_DATA: {
         'name': '',
         'warnings': 0,
@@ -18,5 +19,6 @@ module.exports = {
         'mutecount': 0,
         'mutehistory': ['\u200B'],
         'steamid': '',
+        'cash': 0,
     },
 };

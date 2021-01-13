@@ -9,6 +9,7 @@ const memberDataSchema = mongoose.Schema({
     mutecount: Number,
     mutehistory: Array,
     steamid: String,
+    cash: Number,
 });
 
 module.exports = mongoose.model('MemberData', memberDataSchema);

@@ -61,15 +61,6 @@ exports.getRand = (min, max) => {
     return Math.floor((Math.random() * max) + min);
 };
 
-exports.formatDungeonName = (string) => {
-    let dungeonName = string.replace(/_/g, ' ');
-    return dungeonName = dungeonName.toLowerCase()
-        .split(' ')
-        .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
-        .join(' ');
-
-};
-
 /**
  * Returns a userID depending if there was a mentioned member or not
  *
@@ -102,6 +93,7 @@ exports.getAllGuildMembers = async (guild) => {
                     mutecount: 0,
                     mutehistory: ['\u200B'],
                     steamid: '',
+                    cash: 0,
                 });
                 newMemberData.save()
                 .then(newMember => Object.assign(guild.client.memberinfo, { [memberId]: new MemberInfo(newMember._doc) }))
