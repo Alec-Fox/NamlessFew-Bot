@@ -9,7 +9,9 @@ const client = new AlecClient({
     prefix: process.env.DISCORD_PREFIX,
 });
 const u = require('./util/utilities.js');
-const { getAllGuildMembers, getLastSuggestionMessageOnRestart } = require('./util/utilities.js');
+const { manageVoiceChannel } = require('./util/voice.js');
+// const { MODERATOR_CHANNEL_ID, BOT_CHANNEL_ID } = require('./util/constants.js');
+const { getAllGuildMembers, getLastSuggestionMessageOnRestart, persistWelcomeInfo, welcomeMessage, trackInvites, checkInviter } = require('./util/utilities.js');
 const MuteData = require('./data/models/mutedata.js');
 const MemberInfo = require('./struct/MembersInfo.js');
 const MemberData = require('./data/models/memberdata.js');
@@ -23,15 +25,18 @@ for (const file of commandFiles) {
 client.once('ready', () => {
     console.log(`${client.user.username} READY!`);
     getLastSuggestionMessageOnRestart(client);
-    const guild = client.guilds.first();
+    const guild = client.guilds.cache.first();
     getAllGuildMembers(guild);
-    const mutedRole = guild.roles.find(role => role.name === 'muted');
+    const mutedRole = guild.roles.cache.find(role => role.name === 'muted');
+    guild.fetchInvites()
+        .then(invites => client.guildInvites.set(guild.id, invites))
+        .catch(err => console.log(err));
     client.setInterval(() => {
         MuteData.find().then(mutesDb => {
             mutesDb.forEach(mutes => {
-                const member = guild.members.get(mutes._id);
+                const member = guild.members.cache.get(mutes._id);
                 if (Date.now() > mutes.time) {
-                    member.removeRole(mutedRole);
+                    member.roles.remove(mutedRole);
                     // eslint-disable-next-line max-nested-callbacks
                     MuteData.findByIdAndDelete(mutes._id).then(() => console.log('deleted database entry'));
                 }
@@ -93,6 +98,12 @@ client.on('guildMemberAdd', (member) => {
                 mutehistory: ['\u200B'],
                 steamid: '',
                 cash: 0,
+                level: 0,
+                experience: 0,
+                serverinvites: [],
+                serverinvitesProspect: [],
+                serverinvitesMember: [],
+                inviter: '',
             });
             newMemberData.save()
                 .then(newMember => Object.assign(client.memberinfo, { [member.id]: new MemberInfo(newMember._doc) }))
@@ -102,6 +113,17 @@ client.on('guildMemberAdd', (member) => {
             Object.assign(client.memberinfo, { [member.id]: new MemberInfo(foundMember) });
         }
     });
+    welcomeMessage(member);
+    persistWelcomeInfo(client);
+    trackInvites(member, client);
+});
+client.on('guildMemberUpdate', (oldMember, newMember) => {
+    checkInviter(oldMember, newMember);
+
+});
+client.on('inviteCreate', async (invite) => {
+    client.guildInvites.set(invite.guild.id, await invite.guild.fetchInvites());
+    console.log('invite created:' + invite);
 });
 client.on('error', (error) => {
     console.error(error);
@@ -110,6 +132,10 @@ client.on('error', (error) => {
 client.on('disconnect', (error) => {
     console.error(error);
     client.login(client.config.token);
+});
+
+client.on('voiceStateUpdate', (oldState, newState) => {
+    manageVoiceChannel(oldState, newState);
 });
 
 client.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));

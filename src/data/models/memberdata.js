@@ -10,6 +10,12 @@ const memberDataSchema = mongoose.Schema({
     mutehistory: Array,
     steamid: String,
     cash: Number,
+    level: Number,
+    experience: Number,
+    serverinvites: Array,
+    serverinvitesProspect: Array,
+    serverinvitesMember: Array,
+    inviter: String,
 });
 
 module.exports = mongoose.model('MemberData', memberDataSchema);

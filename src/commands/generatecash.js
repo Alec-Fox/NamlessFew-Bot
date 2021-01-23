@@ -2,7 +2,7 @@ const {
 	constructEmbed,
 } = require('../util/utilities.js');
 module.exports = {
-	name: 'givecash',
+	name: 'generatecash',
 	description: 'Gives cash to a member [Mod use only]',
 	usage: '[@member] [amount]',
 	args: true,
@@ -18,6 +18,6 @@ module.exports = {
 			return message.channel.send(embed);
 		}
 
-		message.client.memberinfo[specifiedMember.id].addCash(message, amount, `${message.member.displayName} gave you ${amount}`);
+		message.client.memberinfo[specifiedMember.id].addCash(specifiedMember, amount, `${message.member.displayName} gave you ${amount}`);
 	},
 };

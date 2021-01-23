@@ -8,8 +8,7 @@ const info = new Info(info_data);
 module.exports = class extends Client {
 	constructor(config) {
 		super({
-			disableEveryone: true,
-			disabledEvents: ['TYPING_START'],
+			disableMentions: 'everyone',
 		});
 
 		this.commands = new Collection();
@@ -23,5 +22,7 @@ module.exports = class extends Client {
 		this.info = info;
 
 		this.memberinfo = {};
+
+		this.guildInvites = new Map();
 	}
 };

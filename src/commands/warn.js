@@ -13,7 +13,7 @@ module.exports = {
 	modOnly: true,
 	execute(message, args) {
 		message.delete();
-		if(message.member.highestRole.comparePositionTo(message.guild.roles.find(role => role.id === MOD_ROLE_ID)) < 0) return message.reply('You are not authorized to use this command.');
+		if(message.member.roles.highest.comparePositionTo(message.guild.roles.cache.find(role => role.id === MOD_ROLE_ID)) < 0) return message.reply('You are not authorized to use this command.');
 		const specifiedMember = message.mentions.members.first();
 		if (!specifiedMember) {
 			const embed = constructEmbed(`\nYou did not specify a valid member. The proper usage would be: \`${message.client.config.prefix}${this.name} ${this.usage}\``, '', null, null);

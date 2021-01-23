@@ -14,7 +14,7 @@ module.exports = {
 	modOnly: true,
 	execute(message, args) {
 		message.delete();
-		if (message.member.highestRole.comparePositionTo(message.guild.roles.find(role => role.id === MOD_ROLE_ID)) < 0) return message.reply('You are not authorized to use this command.');
+		if (message.member.roles.highest.comparePositionTo(message.guild.roles.cache.find(role => role.id === MOD_ROLE_ID)) < 0) return message.reply('You are not authorized to use this command.');
 		const specifiedMember = message.mentions.members.first();
 		if (!specifiedMember) return message.reply(`You did not submit a valid member to mute.\nThe proper usage would be: \`${message.client.config.prefix}${this.name}\` ${this.usage}`);
 		if (args.length < 3) {

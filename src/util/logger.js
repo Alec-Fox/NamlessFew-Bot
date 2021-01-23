@@ -13,6 +13,6 @@ Logger.prototype.info = function(message, text) {
     .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL)
     .setFooter(`ID: ${message.member.id}`)
     .setTimestamp(message.createdAt);
-    message.client.channels.get(LOGGER_CHANNEL_ID).send(embed);
+    message.client.channels.cache.get(LOGGER_CHANNEL_ID).send(embed);
 };
 module.exports = new Logger();
