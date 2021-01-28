@@ -7,13 +7,17 @@ const {
     ROLE_SELECTION_CHANNEL_ID,
     MEMBER_ROLE_ID,
     PROSPECT_ROLE_ID,
+    COMMITTEE_ROLE_ID,
+    CAPTAIN_ROLE_ID,
+    FOLLOWER_ROLE_ID,
+    SUBSCRIBER_ROLE_ID,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
 
 const mongoose = require('mongoose');
 const MemberData = require('../data/models/memberdata.js');
 const SuggestionData = require('../data/models/suggestionsdata.js');
-
+const cron = require('node-cron');
 /**
  * Returns an embed object.
  *
@@ -219,4 +223,53 @@ exports.trackInvites = async (member, client) => {
     catch(err) {
         console.log(err);
     }
+};
+
+exports.WeeklyRolePayOut = (member, roleId) => {
+    switch (roleId) {
+        case COMMITTEE_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(20, 'weekly');
+        }
+        break;
+        case CAPTAIN_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(15, 'weekly');
+        }
+        break;
+        case MEMBER_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(10, 'weekly');
+        }
+        break;
+        case PROSPECT_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(5, 'weekly');
+        }
+        break;
+    }
+};
+
+exports.DailyRolePayOut = (member, roleId) => {
+    switch (roleId) {
+        case FOLLOWER_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(1, 'daily');
+        }
+        break;
+        case SUBSCRIBER_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(5, 'daily');
+        }
+        break;
+    }
+};
+
+exports.startCron = (guild) => {
+    cron.schedule('10 13 * * *', () => {
+        guild.members.cache.forEach(member => member.roles.cache.forEach(role => this.DailyRolePayOut(member, role.id)));
+    }, {
+        scheduled: true,
+        timezone: 'America/New_York',
+    });
+    cron.schedule('15 13 * * 4', () => {
+        guild.members.cache.forEach(member => member.roles.cache.forEach(role => this.WeeklyRolePayOut(member, role.id)));
+    }, {
+        scheduled: true,
+        timezone: 'America/New_York',
+    });
 };

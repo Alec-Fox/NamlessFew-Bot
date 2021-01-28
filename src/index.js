@@ -10,8 +10,7 @@ const client = new AlecClient({
 });
 const u = require('./util/utilities.js');
 const { manageVoiceChannel } = require('./util/voice.js');
-// const { MODERATOR_CHANNEL_ID, BOT_CHANNEL_ID } = require('./util/constants.js');
-const { getAllGuildMembers, getLastSuggestionMessageOnRestart, persistWelcomeInfo, welcomeMessage, trackInvites, checkInviter } = require('./util/utilities.js');
+const { getAllGuildMembers, getLastSuggestionMessageOnRestart, persistWelcomeInfo, welcomeMessage, trackInvites, checkInviter, startCron } = require('./util/utilities.js');
 const MuteData = require('./data/models/mutedata.js');
 const MemberInfo = require('./struct/MembersInfo.js');
 const MemberData = require('./data/models/memberdata.js');
@@ -43,6 +42,7 @@ client.once('ready', () => {
             });
         });
     }, 60000);
+    startCron(guild);
 });
 
 client.on('message', message => {

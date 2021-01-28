@@ -26,9 +26,14 @@ module.exports = class MemberInfo {
         }
         return embed;
     }
+    addRoleIncome(amount, type) {
+        this.cash += amount;
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> console.log(`added ${amount} for ${this.name}'s ${type} role income.`));
+    }
     addInvite(member, memberId) {
         if(!this.serverinvites.includes(memberId)) {
             this.serverinvites.push(memberId);
+            member.client.memberinfo[memberId].inviter = this._id;
             MemberData.findByIdAndUpdate(this._id, { serverinvites: this.serverinvites }).then(() => console.log(`added ${memberId} to ${this._id}'s invite count`));
             MemberData.findByIdAndUpdate(memberId, { inviter: this._id }).then(() => console.log(`added ${this._id} to ${memberId}'s as inviter`));
             this.addCash(member, 10, `Reward for inviting ${member.displayName} to the server`);
@@ -66,7 +71,7 @@ module.exports = class MemberInfo {
         const BotCommandsChannel = member.guild.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
         this.cash += amount;
         MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> console.log('added cash to database'));
-        const embed = this.constructEmbed(`${this.name}, added ${amount} to your bank`, `Reason: ${reason}. \nYour total balance is now ${this.cash}`, null, null);
+        const embed = this.constructEmbed(`${this.name}, ${amount} was added to your bank`, `Reason: ${reason}. \nYour total balance is now ${this.cash}`, null, null);
         this.updateEconomyLog(member, this.name, amount, reason);
         return BotCommandsChannel.send(embed);
     }

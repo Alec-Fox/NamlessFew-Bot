@@ -13,16 +13,16 @@ module.exports = {
             const embed = constructEmbed(`${message.member.displayName}'s Invites:`, `Server Invites:${message.client.memberinfo[message.author.id].serverinvites.length}
             \nProspect Invites: ${message.client.memberinfo[message.author.id].serverinvitesProspect.length}
             \nMember Invites: ${message.client.memberinfo[message.author.id].serverinvitesMember.length}`);
-            embed.setThumbnail(`${message.member.user.displayAvatarURL()}`);
+			embed.setThumbnail(`${message.member.user.displayAvatarURL()}`);
             message.channel.send(embed);
 		}
 		else {
 			const specifiedMember = message.mentions.members.first();
-            if (!specifiedMember) return message.reply('You did not submit a valid member view cash.');
+            if (!specifiedMember) return message.reply('You did not submit a valid member view invites.');
             const embed = constructEmbed(`${specifiedMember.displayName}'s Invites:`, `Server Invites:${message.client.memberinfo[specifiedMember.id].serverinvites.length}
             \nProspect Invites: ${message.client.memberinfo[specifiedMember.id].serverinvitesProspect.length}
             \nMember Invites: ${message.client.memberinfo[specifiedMember.id].serverinvitesMember.length}`);
-            embed.setThumbnail(`${specifiedMember.user.displayAvatarURL()}`);
+			embed.setThumbnail(`${specifiedMember.user.displayAvatarURL()}`);
             message.channel.send(embed);
 			console.log(message.client.memberinfo[specifiedMember.id].serverinvites.length);
 		}
