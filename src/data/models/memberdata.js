@@ -16,6 +16,7 @@ const memberDataSchema = mongoose.Schema({
     serverinvitesProspect: Array,
     serverinvitesMember: Array,
     inviter: String,
+    moneyledger: Array,
 });
 
 module.exports = mongoose.model('MemberData', memberDataSchema);

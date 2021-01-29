@@ -6,7 +6,7 @@ const {
 } = require('../util/constants.js');
 module.exports = {
 	name: 'generatecash',
-	description: 'Gives cash (<2000) to a member [Mod use only]',
+	description: 'Generates cash (<2000) to a member [Mod use only]',
 	usage: '[@member] [amount] [reason]',
 	args: true,
 	cooldown: 5,
@@ -27,6 +27,6 @@ module.exports = {
 		const reasonsArray = args.splice(2, args.length);
 		let reasons = reasonsArray.toString();
 		reasons = reasons.replace(/,/g, ' ');
-		message.client.memberinfo[specifiedMember.id].addCash(specifiedMember, amount, `${message.member.displayName} gave you ${amount} for: ${reasons}`);
+		message.client.memberinfo[specifiedMember.id].addCash(specifiedMember, amount, `${message.member.displayName} generated you ${amount} for: ${reasons}`);
 	},
 };

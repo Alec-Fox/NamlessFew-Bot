@@ -26,9 +26,11 @@ module.exports = class MemberInfo {
         }
         return embed;
     }
-    addRoleIncome(amount, type) {
+    addRoleIncome(amount, type, member) {
         this.cash += amount;
-        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> console.log(`added ${amount} for ${this.name}'s ${type} role income.`));
+        this.moneyledger.push([type, amount]);
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, this.name, amount, type, '+'));
+        MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger });
     }
     addInvite(member, memberId) {
         if(!this.serverinvites.includes(memberId)) {
@@ -57,23 +59,30 @@ module.exports = class MemberInfo {
         this.experience += amount;
         MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(()=> this.checkLevel(message));
     }
-    updateEconomyLog(member, memberName, amount, reason) {
+    updateEconomyLog(member, memberName, amount, reason, incrementType) {
         const EconomyLogChannel = member.guild.channels.cache.find(channel => channel.id === ECONOMY_LOGGER_CHANNEL_ID);
-        const embed = this.constructEmbed(`${memberName} received ${amount}`, `Reason: ${reason}`);
+        const embed = this.constructEmbed(`${memberName}'s bank adjustment: ${incrementType}${amount}`, `Reason: ${reason}`);
         embed.setTimestamp();
         return EconomyLogChannel.send(embed);
     }
     bank(message) {
-        const embed = this.constructEmbed(`${this.name}, your total balance is ${this.cash}.`, '', null, null);
+        const embed = this.constructEmbed(`${this.name}, your total balance is ${this.cash}.`, this.moneyledger, null, null);
         return message.channel.send(embed);
     }
     addCash(member, amount, reason) {
         const BotCommandsChannel = member.guild.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
         this.cash += amount;
-        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> console.log('added cash to database'));
+        this.moneyledger.push([reason, amount]);
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, this.name, amount, reason, '+'));
+        MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger }).then(()=>console.log('updated ledger'));
         const embed = this.constructEmbed(`${this.name}, ${amount} was added to your bank`, `Reason: ${reason}. \nYour total balance is now ${this.cash}`, null, null);
-        this.updateEconomyLog(member, this.name, amount, reason);
         return BotCommandsChannel.send(embed);
+    }
+    removeCash(member, amount, reason) {
+        this.cash -= amount;
+        this.moneyledger.push([reason, -amount]);
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, this.name, amount, reason, '-'));
+        MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger }).then(()=>console.log('updated ledger'));
     }
     setSteamId(message, args) {
         this.steamid = args[0];

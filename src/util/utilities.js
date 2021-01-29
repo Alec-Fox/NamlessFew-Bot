@@ -228,19 +228,19 @@ exports.trackInvites = async (member, client) => {
 exports.WeeklyRolePayOut = (member, roleId) => {
     switch (roleId) {
         case COMMITTEE_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(20, 'weekly');
+            member.client.memberinfo[member.id].addRoleIncome(20, 'Weekly Committee Income', member);
         }
         break;
         case CAPTAIN_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(15, 'weekly');
+            member.client.memberinfo[member.id].addRoleIncome(15, 'Weekly Captain Income', member);
         }
         break;
         case MEMBER_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(10, 'weekly');
+            member.client.memberinfo[member.id].addRoleIncome(10, 'Weekly Member Income', member);
         }
         break;
         case PROSPECT_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(5, 'weekly');
+            member.client.memberinfo[member.id].addRoleIncome(5, 'Weekly Prospect Income', member);
         }
         break;
     }
@@ -249,11 +249,11 @@ exports.WeeklyRolePayOut = (member, roleId) => {
 exports.DailyRolePayOut = (member, roleId) => {
     switch (roleId) {
         case FOLLOWER_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(1, 'daily');
+            member.client.memberinfo[member.id].addRoleIncome(1, 'Daily Follower Income', member);
         }
         break;
         case SUBSCRIBER_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(5, 'daily');
+            member.client.memberinfo[member.id].addRoleIncome(5, 'Daily Subscriber Income', member);
         }
         break;
     }
@@ -272,4 +272,9 @@ exports.startCron = (guild) => {
         scheduled: true,
         timezone: 'America/New_York',
     });
+};
+
+exports.checkCash = (message, amount) => {
+    if (message.client.memberinfo[message.member.id].cash < amount) return false;
+    else return true;
 };

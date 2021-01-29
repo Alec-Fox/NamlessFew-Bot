@@ -14,7 +14,8 @@ const { getAllGuildMembers, getLastSuggestionMessageOnRestart, persistWelcomeInf
 const MuteData = require('./data/models/mutedata.js');
 const MemberInfo = require('./struct/MembersInfo.js');
 const MemberData = require('./data/models/memberdata.js');
-
+const { platformEmojis, rankEmojis, pingEmojis, regionEmojis } = require('./util/constants.js');
+const roleClaim = require('./util/role-claim.js');
 const commandFiles = readdirSync(join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
     const command = require(join(__dirname, 'commands', `${file}`));
@@ -43,6 +44,10 @@ client.once('ready', () => {
         });
     }, 60000);
     startCron(guild);
+    roleClaim(client, platformEmojis, '**React to choose a platform role:**\n');
+    roleClaim(client, regionEmojis, '**React to choose a region role:**\n');
+    roleClaim(client, pingEmojis, '**React to choose a ping role:**\n');
+    roleClaim(client, rankEmojis, '**React to choose a rank role:**\n');
 });
 
 client.on('message', message => {
@@ -104,6 +109,7 @@ client.on('guildMemberAdd', (member) => {
                 serverinvitesProspect: [],
                 serverinvitesMember: [],
                 inviter: '',
+                moneyledger: [],
             });
             newMemberData.save()
                 .then(newMember => Object.assign(client.memberinfo, { [member.id]: new MemberInfo(newMember._doc) }))
