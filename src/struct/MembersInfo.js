@@ -5,6 +5,7 @@ const {
     ECONOMY_LOGGER_CHANNEL_ID,
     BOT_CHANNEL_ID,
 } = require('../util/constants.js');
+const { calculateRequiredXpTable } = require('../util/levelsystem.js');
 const ms = require('ms');
 const MemberData = require('../data/models/memberdata.js');
 const MuteData = require('../data/models/mutedata.js');
@@ -57,7 +58,20 @@ module.exports = class MemberInfo {
     }
     addExperience(message, amount) {
         this.experience += amount;
-        MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(()=> this.checkLevel(message));
+        console.log(`giving ${amount} xp to ${message.member.displayName}.`);
+        MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(()=> this.checkLevel());
+    }
+    checkLevel() {
+        const xpTable = calculateRequiredXpTable();
+        console.log(`current level: ${this.level}\ncurrent xp: ${this.experience}`);
+        console.log(`required xp: ${xpTable[this.level + 1]}`);
+        if(this.experience >= xpTable[this.level + 1]) {
+            this.level++;
+            this.experience = 0;
+            MemberData.findByIdAndUpdate(this._id, { level: this.level }).then(() => console.log(`${this.name} leveled to ${this.level}`));
+            MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(() => console.log('reset xp'));
+
+        }
     }
     updateEconomyLog(member, memberName, amount, reason, incrementType) {
         const EconomyLogChannel = member.guild.channels.cache.find(channel => channel.id === ECONOMY_LOGGER_CHANNEL_ID);
@@ -123,6 +137,10 @@ module.exports = class MemberInfo {
         embed.setTimestamp(message.createdAt);
         return message.channel.send(embed);
 
+    }
+    bet(message, amount) {
+        message;
+        amount;
     }
     async mute(message, specifiedMember, mutetime, reason) {
         this.mutecount++;

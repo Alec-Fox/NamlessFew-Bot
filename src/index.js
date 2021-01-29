@@ -16,6 +16,7 @@ const MemberInfo = require('./struct/MembersInfo.js');
 const MemberData = require('./data/models/memberdata.js');
 const { platformEmojis, rankEmojis, pingEmojis, regionEmojis } = require('./util/constants.js');
 const roleClaim = require('./util/role-claim.js');
+const { giveXp } = require('./util/levelsystem.js');
 const commandFiles = readdirSync(join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
 for (const file of commandFiles) {
     const command = require(join(__dirname, 'commands', `${file}`));
@@ -52,7 +53,9 @@ client.once('ready', () => {
 
 client.on('message', message => {
     u.persistSuggestions(message);
-    if (!message.content.startsWith(client.config.prefix) || message.author.bot || message.channel.type === 'dm') return;
+    if (message.author.bot || message.channel.type === 'dm') return;
+    giveXp(message);
+    if (!message.content.startsWith(client.config.prefix)) return;
     const args = message.content.slice(client.config.prefix.length).split(/ +/);
     const commandName = args.shift().toLowerCase();
     const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
@@ -105,11 +108,13 @@ client.on('guildMemberAdd', (member) => {
                 cash: 0,
                 level: 0,
                 experience: 0,
+                requiredexperience: 0,
                 serverinvites: [],
                 serverinvitesProspect: [],
                 serverinvitesMember: [],
                 inviter: '',
                 moneyledger: [],
+                gambling: { winstreak: 0, losestreak: 0, totalwins: 0, totalloses: 0, totalwinnings: 0, totallosings: 0, highestwinstreak: 0, highestlosestreak: 0 },
             });
             newMemberData.save()
                 .then(newMember => Object.assign(client.memberinfo, { [member.id]: new MemberInfo(newMember._doc) }))

@@ -12,11 +12,13 @@ const memberDataSchema = mongoose.Schema({
     cash: Number,
     level: Number,
     experience: Number,
+    requiredexperience: Number,
     serverinvites: Array,
     serverinvitesProspect: Array,
     serverinvitesMember: Array,
     inviter: String,
     moneyledger: Array,
+    gambling: Object,
 });
 
 module.exports = mongoose.model('MemberData', memberDataSchema);
