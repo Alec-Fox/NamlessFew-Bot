@@ -8,9 +8,10 @@ const {
     MEMBER_ROLE_ID,
     PROSPECT_ROLE_ID,
     COMMITTEE_ROLE_ID,
-    CAPTAIN_ROLE_ID,
     FOLLOWER_ROLE_ID,
     SUBSCRIBER_ROLE_ID,
+    HANGAROUND_ROLE_ID,
+    STAFF_ROLE_ID,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
 
@@ -228,19 +229,23 @@ exports.trackInvites = async (member, client) => {
 exports.WeeklyRolePayOut = (member, roleId) => {
     switch (roleId) {
         case COMMITTEE_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(20, 'Weekly Committee Income', member);
+            member.client.memberinfo[member.id].addRoleIncome(100, 'Weekly Committee Income', member);
         }
         break;
-        case CAPTAIN_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(15, 'Weekly Captain Income', member);
+        case STAFF_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(50, 'Weekly Captain Income', member);
         }
         break;
         case MEMBER_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(10, 'Weekly Member Income', member);
+            member.client.memberinfo[member.id].addRoleIncome(100, 'Weekly Member Income', member);
         }
         break;
         case PROSPECT_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(5, 'Weekly Prospect Income', member);
+            member.client.memberinfo[member.id].addRoleIncome(50, 'Weekly Prospect Income', member);
+        }
+        break;
+        case HANGAROUND_ROLE_ID: {
+            member.client.memberinfo[member.id].addRoleIncome(30, 'Weekly Hangaround Income', member);
         }
         break;
     }
