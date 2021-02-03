@@ -20,3 +20,14 @@ exports.calculateRequiredXpTable = () => {
     }
     return(xp);
 };
+
+exports.calculateLeaderBoards = (client) => {
+    const sortableLevels = [];
+    Object.keys(client.memberinfo).forEach(key => {
+        sortableLevels.push([key, client.memberinfo[key].level]);
+    });
+    sortableLevels.sort(function(a, b) {
+        return b[1] - a[1];
+    });
+    return sortableLevels;
+};

@@ -1,5 +1,6 @@
 const {
     MessageEmbed,
+    MessageAttachment,
 } = require('discord.js');
 const {
     SUGGESTIONS_CHANNEL_ID,
@@ -14,8 +15,8 @@ const {
     STAFF_ROLE_ID,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
-
 const mongoose = require('mongoose');
+const Canvas = require('canvas');
 const MemberData = require('../data/models/memberdata.js');
 const SuggestionData = require('../data/models/suggestionsdata.js');
 const cron = require('node-cron');
@@ -190,11 +191,55 @@ exports.persistWelcomeInfo = (client) => {
     });
 };
 
-exports.welcomeMessage = (member) => {
+exports.welcomeMessage = async (member) => {
     const welcomeChannel = member.guild.channels.cache.find(channel => channel.id === WELCOME_CHANNEL_ID);
-    const embed = this.constructEmbed(`${member.displayName} welcome to the Nameless Few.`, `#${member.guild.memberCount}`);
-    embed.setThumbnail(`${member.user.displayAvatarURL()}`);
-    welcomeChannel.send(embed);
+    const now = new Date();
+    const applyText = (canvas, size) => {
+        const ctx = canvas.getContext('2d');
+        ctx.textAlign = 'center';
+        ctx.font = `${size}px sans-serif, Cambria Math`;
+        return ctx.font;
+    };
+    const applyNameText = (canvas, text) => {
+        const textInfo = {};
+        const ctx = canvas.getContext('2d');
+        let fontSize = 75;
+        ctx.textAlign = 'center';
+        ctx.font = `${fontSize}px sans-serif, Cambria Math`;
+        do {
+            ctx.font = `${fontSize -= 1}px sans-serif, Cambria Math`;
+        } while (ctx.measureText(text).width > 1000);
+        textInfo.font = ctx.font;
+        textInfo.width = ctx.measureText(text).width;
+
+        return textInfo;
+    };
+    const canvas = Canvas.createCanvas(1100, 500);
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    const background = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/welcome_template.png');
+    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#ffffff';
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.arc(550, 370, 110, 0, 2 * Math.PI, false);
+    ctx.clip();
+    const userImage = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'png' }));
+    ctx.drawImage(userImage, 438, 257, 224, 224);
+    ctx.restore();
+    const userName = member.user.tag.toString();
+    const textInfo = applyNameText(canvas, `${userName} just joined the Nameless Few!`);
+    ctx.font = textInfo.font;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(`${userName} joined the Nameless Few!`, canvas.width / 2, 240);
+    ctx.font = applyText(canvas, 25);
+    ctx.textAlign = 'right';
+    ctx.fillText(`Discord Member # ${member.guild.memberCount}`, 1080, 485);
+    ctx.font = applyText(canvas, 25);
+    ctx.textAlign = 'left';
+    ctx.fillText(`Joined: ${now.toLocaleString()}`, 20, 485);
+    const attachment = new MessageAttachment(canvas.toBuffer(), 'ranksImage.png');
+    welcomeChannel.send(attachment);
 
 };
 exports.passiveIncome = () => {

@@ -1,11 +1,14 @@
 const {
     MessageEmbed,
+    MessageAttachment,
 } = require('discord.js');
+const Canvas = require('canvas');
+const _ = require('lodash');
 const {
     ECONOMY_LOGGER_CHANNEL_ID,
     BOT_CHANNEL_ID,
 } = require('../util/constants.js');
-const { calculateRequiredXpTable } = require('../util/levelsystem.js');
+const { calculateRequiredXpTable, calculateLeaderBoards } = require('../util/levelsystem.js');
 const ms = require('ms');
 const MemberData = require('../data/models/memberdata.js');
 const MuteData = require('../data/models/mutedata.js');
@@ -27,11 +30,85 @@ module.exports = class MemberInfo {
         }
         return embed;
     }
+    async displayLevel(message, member) {
+        const xpTable = calculateRequiredXpTable();
+        const applyText = (canvas, size) => {
+            const ctx = canvas.getContext('2d');
+            ctx.textAlign = 'center';
+            ctx.font = `${size}px sans-serif, Cambria Math`;
+            return ctx.font;
+        };
+        const applyNameText = (canvas, text) => {
+            const textInfo = {};
+            const ctx = canvas.getContext('2d');
+            let fontSize = 75;
+            ctx.textAlign = 'center';
+            ctx.font = `${fontSize}px sans-serif, Cambria Math`;
+            do {
+                ctx.font = `${fontSize -= 1}px sans-serif, Cambria Math`;
+            } while (ctx.measureText(text).width > 700);
+            textInfo.font = ctx.font;
+            textInfo.width = ctx.measureText(text).width;
+
+            return textInfo;
+        };
+        const canvas = Canvas.createCanvas(1000, 300);
+        const ctx = canvas.getContext('2d');
+        ctx.save();
+        const background = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/level_template.png');
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+        const roleImage = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/committee_role.png');
+        ctx.drawImage(roleImage, 745, 125, 200, 50);
+        ctx.beginPath();
+        ctx.arc(128, 147, 123, 0, 2 * Math.PI, false);
+        ctx.clip();
+        const userImage = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'png' }));
+        ctx.drawImage(userImage, 1, 20, 254, 254);
+        ctx.restore();
+        ctx.strokeStyle = '#74037b';
+        const userName = member.displayName.toString();
+        const textInfo = applyNameText(canvas, `${userName}`);
+        ctx.font = textInfo.font;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(`${userName}`, canvas.width / 2 + 100, 105);
+        ctx.font = applyText(canvas, 40);
+        ctx.fillText('Level:', 550, 170);
+        ctx.font = applyText(canvas, 50);
+        ctx.textAlign = 'left';
+        ctx.fillText(`${this.level}`, 630, 170);
+        const requiredXp = xpTable[this.level + 1];
+        const leaderBoards = calculateLeaderBoards(message.client);
+        const myRank = _.findIndex(leaderBoards, function(el) { return el.includes(member.id);}) + 1;
+        ctx.font = applyText(canvas, 40);
+        ctx.fillText('Rank:', 310, 170);
+        ctx.textAlign = 'left';
+        ctx.font = applyText(canvas, 50);
+        ctx.fillText(`#${myRank}`, 415, 170);
+        ctx.beginPath();
+        ctx.moveTo(260, 208);
+        ctx.lineTo(940, 208);
+        ctx.lineWidth = 65;
+        ctx.strokeStyle = 'rgba(255, 255, 255, .40)';
+        ctx.stroke();
+        ctx.restore();
+        ctx.beginPath();
+        ctx.moveTo(260, 208);
+        const xpPercent = this.experience / requiredXp;
+        const xpBarDistance = 430 * xpPercent;
+        ctx.lineTo(260 + xpBarDistance, 208);
+        ctx.strokeStyle = '#95A5A6';
+        ctx.stroke();
+        ctx.font = applyText(canvas, 30);
+        ctx.textAlign = 'right';
+        ctx.fillText(`${this.experience} / ${requiredXp} XP`, canvas.width - 70, 220);
+        const attachment = new MessageAttachment(canvas.toBuffer(), 'ranksImage.png');
+        message.channel.send(attachment);
+    }
     addRoleIncome(amount, type, member) {
         this.cash += amount;
         this.moneyledger.push([type, amount]);
         MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, this.name, amount, type, '+'));
-        MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger });
+        MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger }).then(()=>console.log('updated ledger'));
     }
     addInvite(member, memberId) {
         if(!this.serverinvites.includes(memberId)) {
@@ -58,19 +135,20 @@ module.exports = class MemberInfo {
     }
     addExperience(message, amount) {
         this.experience += amount;
-        console.log(`giving ${amount} xp to ${message.member.displayName}.`);
-        MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(()=> this.checkLevel());
+        MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(()=> this.checkLevel(message));
     }
-    checkLevel() {
+    checkLevel(message) {
         const xpTable = calculateRequiredXpTable();
-        console.log(`current level: ${this.level}\ncurrent xp: ${this.experience}`);
-        console.log(`required xp: ${xpTable[this.level + 1]}`);
         if(this.experience >= xpTable[this.level + 1]) {
             this.level++;
             this.experience = 0;
             MemberData.findByIdAndUpdate(this._id, { level: this.level }).then(() => console.log(`${this.name} leveled to ${this.level}`));
             MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(() => console.log('reset xp'));
-
+            const BotCommandsChannel = message.guild.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
+            const coinEmoji = message.client.emojis.cache.find(emoji => emoji.name === 'Coin');
+            const embed = this.constructEmbed(`${this.name}, you are now level ${this.level}!`, `Congrats! Here is a reward: 5${coinEmoji}`, null);
+            this.addCash(message.member, 5, `Reward for leveling to ${this.level}`);
+            return BotCommandsChannel.send(embed);
         }
     }
     updateEconomyLog(member, memberName, amount, reason, incrementType) {
@@ -79,9 +157,74 @@ module.exports = class MemberInfo {
         embed.setTimestamp();
         return EconomyLogChannel.send(embed);
     }
-    bank(message) {
-        const embed = this.constructEmbed(`${this.name}, your total balance is ${this.cash}.`, this.moneyledger, null, null);
-        return message.channel.send(embed);
+    async bank(message, member) {
+        const applyText = (canvas, size) => {
+            const ctx = canvas.getContext('2d');
+            ctx.textAlign = 'center';
+            ctx.font = `${size}px sans-serif, Cambria Math`;
+            return ctx.font;
+        };
+        const applyNameText = (canvas, text) => {
+            const textInfo = {};
+            const ctx = canvas.getContext('2d');
+            let fontSize = 75;
+            ctx.textAlign = 'left';
+            ctx.font = `${fontSize}px sans-serif, Cambria Math`;
+            do {
+                ctx.font = `${fontSize -= 1}px sans-serif, Cambria Math`;
+            } while (ctx.measureText(text).width > 500);
+                textInfo.font = ctx.font;
+                textInfo.width = ctx.measureText(text).width;
+            return textInfo;
+        };
+        const canvas = Canvas.createCanvas(1100, 1000);
+        const ctx = canvas.getContext('2d');
+        ctx.save();
+        const background = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/bank_template.png');
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#ffffff';
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(255, 255, 255, .50)';
+        ctx.fillRect(10, 160, 1080, 135);
+        ctx.beginPath();
+        ctx.arc(105, 229, 65, 0, 2 * Math.PI, false);
+        ctx.clip();
+        const userImage = await Canvas.loadImage(member.user.displayAvatarURL({ format: 'png' }));
+        ctx.drawImage(userImage, 40, 163, 130, 130);
+        ctx.restore();
+        const userName = member.displayName.toString();
+        const textInfo = applyNameText(canvas, `${userName}`);
+        ctx.font = textInfo.font;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(`${userName}`, 200, 250);
+        ctx.font = applyText(canvas, 25);
+        ctx.fillText('Transaction Log', canvas.width / 2, 290);
+        ctx.font = applyText(canvas, 25);
+        ctx.fillText('Here are your last 10 transactions', canvas.width / 2, 335);
+        let yInterval = 0;
+        const coin = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/nfcoin.png');
+        for (let i = 0; i < 10; i++) {
+            if (this.moneyledger[this.moneyledger.length - i - 1] === undefined) break;
+            ctx.fillStyle = 'rgba(255, 255, 255, .35)';
+            ctx.fillRect(100, 360 + yInterval, 900, 50);
+            ctx.font = applyText(canvas, 20);
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(`${this.moneyledger[this.moneyledger.length - i - 1][0]}`, 110, 390 + yInterval);
+            ctx.textAlign = 'right';
+            if (this.moneyledger[this.moneyledger.length - i - 1][1] > 0) ctx.fillStyle = '#59ff00';
+            else ctx.fillStyle = '#ff0000';
+            ctx.fillText(`${this.moneyledger[this.moneyledger.length - i - 1][1]}`, 965, 390 + yInterval);
+            ctx.drawImage(coin, 971, 372 + yInterval, 24, 24);
+            yInterval += 60;
+        }
+        ctx.font = applyText(canvas, 30);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'right';
+        ctx.fillText(`Account Balance: ${this.cash}`, 1050, 250);
+        ctx.drawImage(coin, 1053, 224, 32, 32);
+        const attachment = new MessageAttachment(canvas.toBuffer(), 'ranksImage.png');
+        return message.channel.send(attachment);
     }
     addCash(member, amount, reason) {
         const BotCommandsChannel = member.guild.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);

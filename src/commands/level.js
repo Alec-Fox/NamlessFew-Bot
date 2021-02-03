@@ -1,19 +1,18 @@
 module.exports = {
-	name: 'cash',
-	description: 'Displays your total cash',
+	name: 'level',
+	description: 'Display your server level.',
 	usage: '',
-	cooldown: 5,
+    cooldown: 1,
 	modOnly: false,
 	execute(message, args) {
 		message.delete();
 		if (!args[0]) {
-			message.client.memberinfo[message.author.id].bank(message, message.member);
+			message.client.memberinfo[message.author.id].displayLevel(message, message.member);
 		}
 		else {
 			const specifiedMember = message.mentions.members.first();
 			if (!specifiedMember) return message.reply('You did not submit a valid member view cash.');
-			message.client.memberinfo[specifiedMember.id].bank(message, specifiedMember);
+			message.client.memberinfo[specifiedMember.id].displayLevel(message, specifiedMember);
 		}
-
 	},
 };

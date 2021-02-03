@@ -1,7 +1,6 @@
 const {
-    DEV_ID,
+    MOD_ROLE_ID,
 } = require('../util/constants.js');
-
 module.exports = {
     name: 'prune',
     description: '(ADMIN ONLY) Prune up to 99 messages.',
@@ -11,7 +10,7 @@ module.exports = {
     cooldown: 5,
     execute(message, args) {
         message.delete();
-        if (message.member.id !== DEV_ID) return message.reply('You do not have the privileges to use this command!');
+        if (message.member.roles.highest.comparePositionTo(message.guild.roles.cache.find(role => role.id === MOD_ROLE_ID)) < 0) return message.reply('You are not authorized to use this command.');
         const amount = parseInt(args[0]) + 1;
 
         if (isNaN(amount)) {
