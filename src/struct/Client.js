@@ -24,5 +24,7 @@ module.exports = class extends Client {
 		this.memberinfo = {};
 
 		this.guildInvites = new Map();
+
+		this.activeUsersMap = new Map();
 	}
 };

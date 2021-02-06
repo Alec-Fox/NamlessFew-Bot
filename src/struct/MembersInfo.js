@@ -51,25 +51,21 @@ module.exports = class MemberInfo {
         let xpBarColor = HANGAROUND_ROLE_COLOR;
         let roleBadge = HANGAROUND_ROLE_BADGE_PNG;
         switch(this.returnTopRoleHierarchyColor(member)) {
-            case 'committee': {
+            case 'committee':
                 xpBarColor = COMMITTEE_ROLE_COLOR;
                 roleBadge = COMMITTEE_ROLE_BADGE_PNG;
-            }
             break;
-            case 'staff': {
+            case 'staff':
                 xpBarColor = STAFF_ROLE_COLOR;
                 roleBadge = STAFF_ROLE_BADGE_PNG;
-            }
             break;
-            case 'member': {
+            case 'member':
                 xpBarColor = MEMBER_ROLE_COLOR;
                 roleBadge = MEMBER_ROLE_BADGE_PNG;
-            }
             break;
-            case 'prospect': {
+            case 'prospect':
                 xpBarColor = PROSPECT_ROLE_COLOR;
                 roleBadge = PROSPECT_ROLE_BADGE_PNG;
-            }
             break;
         }
         const xpTable = calculateRequiredXpTable();

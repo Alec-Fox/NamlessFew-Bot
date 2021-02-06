@@ -19,12 +19,14 @@ const {
 	PROSPECT_ROLE_COLOR,
     HANGAROUND_ROLE_COLOR,
     WELCOME_TEMPLATE_PNG,
+    INACTIVE_ROLE_ID,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
 const mongoose = require('mongoose');
 const Canvas = require('canvas');
 const MemberData = require('../data/models/memberdata.js');
 const SuggestionData = require('../data/models/suggestionsdata.js');
+const ActiveUsersData = require('../data/models/activeuserdata.js');
 const cron = require('node-cron');
 /**
  * Returns an embed object.
@@ -325,6 +327,22 @@ exports.startCron = (guild) => {
         scheduled: true,
         timezone: 'America/New_York',
     });
+    cron.schedule('0 12 1,14 * *', () => {
+        this.addInactiveRole(guild);
+    }, {
+        scheduled: true,
+        timezone: 'America/New_York',
+    });
+};
+
+exports.addInactiveRole = (guild) => {
+    guild.members.cache.forEach(member => {
+        if (!guild.client.activeUsersMap.has(member.id)) {
+            member.roles.add(INACTIVE_ROLE_ID);
+        }
+    });
+    guild.client.activeUsersMap.clear();
+    ActiveUsersData.findByIdAndUpdate(guild.id, { activeUsersMap: guild.client.activeUsersMap }).then(()=>console.log('cleared database activeUsersMap'));
 };
 
 exports.checkCash = (message, amount) => {

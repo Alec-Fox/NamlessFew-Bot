@@ -12,9 +12,10 @@ const u = require('./util/utilities.js');
 const { manageVoiceChannel } = require('./util/voice.js');
 const { getAllGuildMembers, getLastSuggestionMessageOnRestart, persistWelcomeInfo, welcomeMessage, trackInvites, checkInviter, startCron } = require('./util/utilities.js');
 const MuteData = require('./data/models/mutedata.js');
+const ActiveUsersData = require('./data/models/activeuserdata.js');
 const MemberInfo = require('./struct/MembersInfo.js');
 const MemberData = require('./data/models/memberdata.js');
-const { platformEmojis, rankEmojis, pingEmojis, regionEmojis } = require('./util/constants.js');
+const { platformEmojis, rankEmojis, pingEmojis, regionEmojis, INACTIVE_ROLE_ID } = require('./util/constants.js');
 const roleClaim = require('./util/role-claim.js');
 const { giveXp } = require('./util/levelsystem.js');
 const commandFiles = readdirSync(join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
@@ -24,10 +25,14 @@ for (const file of commandFiles) {
 }
 
 client.once('ready', () => {
+    const guild = client.guilds.cache.first();
     console.log(`${client.user.username} READY!`);
     getLastSuggestionMessageOnRestart(client);
-    const guild = client.guilds.cache.first();
     getAllGuildMembers(guild);
+    ActiveUsersData.findById(guild.id).lean().exec(function(err, activeUserDataMap) {
+        if (err) console.log(err);
+        Object.keys(activeUserDataMap.activeUsersMap).forEach(key => client.activeUsersMap.set(key));
+    });
     const mutedRole = guild.roles.cache.find(role => role.name === 'muted');
     guild.fetchInvites()
         .then(invites => client.guildInvites.set(guild.id, invites))
@@ -53,6 +58,11 @@ client.once('ready', () => {
 
 client.on('message', message => {
     u.persistSuggestions(message);
+    if (!client.activeUsersMap.has(message.member.id)) {
+        client.activeUsersMap.set(message.member.id);
+        ActiveUsersData.findByIdAndUpdate(message.guild.id, { activeUsersMap: client.activeUsersMap }).then(()=>console.log('updated activeUserMap'));
+        message.member.roles.remove(INACTIVE_ROLE_ID);
+    }
     if (message.author.bot || message.channel.type === 'dm') return;
     giveXp(message);
     if (!message.content.startsWith(client.config.prefix)) return;
