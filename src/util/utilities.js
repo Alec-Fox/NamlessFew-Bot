@@ -118,6 +118,7 @@ exports.getAllGuildMembers = async (guild) => {
                     serverinvitesProspect: [],
                     serverinvitesMember: [],
                     inviter : '',
+                    gambling: { 'winstreak': 0, 'losestreak': 0, 'totalwins': 0, 'totalloses': 0, 'totalwinnings': 0, 'totallosings':0, 'highestwinstreak': 0, 'highestlosestreak': 0 },
                 });
                 newMemberData.save()
                 .then(newMember => Object.assign(guild.client.memberinfo, { [memberId]: new MemberInfo(newMember._doc) }))

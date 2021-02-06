@@ -157,6 +157,11 @@ client.on('disconnect', (error) => {
 
 client.on('voiceStateUpdate', (oldState, newState) => {
     manageVoiceChannel(oldState, newState);
+    if (!client.activeUsersMap.has(newState.member.id)) {
+        client.activeUsersMap.set(newState.member.id);
+        ActiveUsersData.findByIdAndUpdate(newState.guild.id, { activeUsersMap: client.activeUsersMap }).then(()=>console.log('updated activeUserMap'));
+        newState.member.roles.remove(INACTIVE_ROLE_ID);
+    }
 });
 
 client.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));

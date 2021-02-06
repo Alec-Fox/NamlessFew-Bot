@@ -27,11 +27,13 @@ module.exports = {
         console.log(outcome);
         if(outcome) {
             message.client.memberinfo[message.member.id].addCash(message.member, (amount * 2), `You won ${amount * 2} from gambling!`);
+            message.client.memberinfo[message.member.id].gamblingStats('won', amount);
             const embed = constructEmbed(` ${message.member.displayName} won ${amount * 2}`, '', null, null);
 			return message.channel.send(embed);
         }
         else {
             const embed = constructEmbed(` ${message.member.displayName} lost ${amount}`, '', null, null);
+            message.client.memberinfo[message.member.id].gamblingStats('lost', amount);
 			return message.channel.send(embed);
         }
 	},

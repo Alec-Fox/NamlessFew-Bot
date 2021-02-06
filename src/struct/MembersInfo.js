@@ -257,11 +257,11 @@ module.exports = class MemberInfo {
             ctx.drawImage(coin, 971, 372 + yInterval, 24, 24);
             yInterval += 60;
         }
-        ctx.font = applyText(canvas, 30);
+        ctx.font = applyText(canvas, 40);
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'right';
-        ctx.fillText(`Account Balance: ${this.cash}`, 1050, 250);
-        ctx.drawImage(coin, 1053, 224, 32, 32);
+        ctx.fillText(`Balance: ${this.cash}`, 1050, 250);
+        ctx.drawImage(coin, 1053, 220, 32, 32);
         const attachment = new MessageAttachment(canvas.toBuffer(), 'ranksImage.png');
         return message.channel.send(attachment);
     }
@@ -327,6 +327,44 @@ module.exports = class MemberInfo {
         if (member.roles.cache.has(MEMBER_ROLE_ID)) return 'member';
         if (member.roles.cache.has(PROSPECT_ROLE_ID)) return 'prospect';
         return 'hangaround';
+    }
+    gamblingStats(outcome, amount) {
+        switch(outcome) {
+            case 'won' :
+                this.gambling.losestreak = 0;
+                this.gambling.winstreak++;
+                this.gambling.totalwins++;
+                this.gambling.totalwinnings += amount;
+                if (this.gambling.winstreak > this.gambling.highestwinstreak) this.gambling.highestwinstreak = this.gambling.winstreak;
+                MemberData.findByIdAndUpdate(this._id, { gambling: this.gambling }).then(()=>console.log('updated gambling stats'));
+            break;
+            case 'lost' :
+                this.gambling.winstreak = 0;
+                this.gambling.losestreak++;
+                this.gambling.totalloses++;
+                this.gambling.totallosings += amount;
+                if (this.gambling.losestreak > this.gambling.highestlosestreak) this.gambling.highestlosestreak = this.gambling.losestreak;
+                MemberData.findByIdAndUpdate(this._id, { gambling: this.gambling }).then(()=>console.log('updated gambling stats'));
+        }
+    }
+    displayGamblingStats(message, member) {
+        const coinEmoji = message.client.emojis.cache.find(emoji => emoji.name === 'Coin');
+        const embed = this.constructEmbed(`${member.displayName}'s Gambling Stats`, '', null, null, member.user.displayAvatarURL());
+         embed.addFields(
+             { name: 'Current Winning Streak:', value: `${this.gambling.winstreak}`, inline: true },
+             { name: 'Current Losing Streak:', value: `${this.gambling.losestreak}`, inline: true },
+             { name: '\u200B', value: '\u200B', inline: true },
+             { name: 'Total Wins:', value: `${this.gambling.totalwins}`, inline: true },
+             { name: 'Total Losses:', value: `${this.gambling.totalloses}`, inline: true },
+             { name: '\u200B', value: '\u200B', inline: true },
+             { name: 'Highest Winning Streak:', value: `${this.gambling.highestwinstreak}`, inline: true },
+             { name: 'Highest Losing Streak:', value: `${this.gambling.highestlosestreak}`, inline: true },
+             { name: '\u200B', value: '\u200B', inline: true },
+             { name: 'Total Cash Won:', value: `${this.gambling.totalwinnings}${coinEmoji}`, inline: true },
+             { name: 'Total Cash Lost:', value: `${this.gambling.totallosings}${coinEmoji}`, inline: true },
+             { name: '\u200B', value: '\u200B', inline: true },
+             );
+        return message.channel.send(embed);
     }
     async mute(message, specifiedMember, mutetime, reason) {
         this.mutecount++;
