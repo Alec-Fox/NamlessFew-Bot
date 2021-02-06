@@ -7,6 +7,23 @@ const _ = require('lodash');
 const {
     ECONOMY_LOGGER_CHANNEL_ID,
     BOT_CHANNEL_ID,
+    PROSPECT_ROLE_ID,
+    COMMITTEE_ROLE_ID,
+    STAFF_ROLE_ID,
+    COMMITTEE_ROLE_COLOR,
+	STAFF_ROLE_COLOR,
+	MEMBER_ROLE_COLOR,
+	PROSPECT_ROLE_COLOR,
+    HANGAROUND_ROLE_COLOR,
+    MEMBER_ROLE_ID,
+    LEVEL_TEMPLATE_PNG,
+    BANK_TEMPLATE_PNG,
+    NF_COIN_PNG,
+    HANGAROUND_ROLE_BADGE_PNG,
+    PROSPECT_ROLE_BADGE_PNG,
+    MEMBER_ROLE_BADGE_PNG,
+    STAFF_ROLE_BADGE_PNG,
+    COMMITTEE_ROLE_BADGE_PNG,
 } = require('../util/constants.js');
 const { calculateRequiredXpTable, calculateLeaderBoards } = require('../util/levelsystem.js');
 const ms = require('ms');
@@ -31,6 +48,30 @@ module.exports = class MemberInfo {
         return embed;
     }
     async displayLevel(message, member) {
+        let xpBarColor = HANGAROUND_ROLE_COLOR;
+        let roleBadge = HANGAROUND_ROLE_BADGE_PNG;
+        switch(this.returnTopRoleHierarchyColor(member)) {
+            case 'committee': {
+                xpBarColor = COMMITTEE_ROLE_COLOR;
+                roleBadge = COMMITTEE_ROLE_BADGE_PNG;
+            }
+            break;
+            case 'staff': {
+                xpBarColor = STAFF_ROLE_COLOR;
+                roleBadge = STAFF_ROLE_BADGE_PNG;
+            }
+            break;
+            case 'member': {
+                xpBarColor = MEMBER_ROLE_COLOR;
+                roleBadge = MEMBER_ROLE_BADGE_PNG;
+            }
+            break;
+            case 'prospect': {
+                xpBarColor = PROSPECT_ROLE_COLOR;
+                roleBadge = PROSPECT_ROLE_BADGE_PNG;
+            }
+            break;
+        }
         const xpTable = calculateRequiredXpTable();
         const applyText = (canvas, size) => {
             const ctx = canvas.getContext('2d');
@@ -55,9 +96,9 @@ module.exports = class MemberInfo {
         const canvas = Canvas.createCanvas(1000, 300);
         const ctx = canvas.getContext('2d');
         ctx.save();
-        const background = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/level_template.png');
+        const background = await Canvas.loadImage(LEVEL_TEMPLATE_PNG);
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-        const roleImage = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/committee_role.png');
+        const roleImage = await Canvas.loadImage(roleBadge);
         ctx.drawImage(roleImage, 745, 125, 200, 50);
         ctx.beginPath();
         ctx.arc(128, 147, 123, 0, 2 * Math.PI, false);
@@ -94,9 +135,9 @@ module.exports = class MemberInfo {
         ctx.beginPath();
         ctx.moveTo(260, 208);
         const xpPercent = this.experience / requiredXp;
-        const xpBarDistance = 430 * xpPercent;
+        const xpBarDistance = 680 * xpPercent;
         ctx.lineTo(260 + xpBarDistance, 208);
-        ctx.strokeStyle = '#95A5A6';
+        ctx.strokeStyle = xpBarColor;
         ctx.stroke();
         ctx.font = applyText(canvas, 30);
         ctx.textAlign = 'right';
@@ -107,7 +148,7 @@ module.exports = class MemberInfo {
     addRoleIncome(amount, type, member) {
         this.cash += amount;
         this.moneyledger.push([type, amount]);
-        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, this.name, amount, type, '+'));
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, member.displayName, amount, type, '+'));
         MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger }).then(()=>console.log('updated ledger'));
     }
     addInvite(member, memberId) {
@@ -142,18 +183,19 @@ module.exports = class MemberInfo {
         if(this.experience >= xpTable[this.level + 1]) {
             this.level++;
             this.experience = 0;
-            MemberData.findByIdAndUpdate(this._id, { level: this.level }).then(() => console.log(`${this.name} leveled to ${this.level}`));
+            MemberData.findByIdAndUpdate(this._id, { level: this.level }).then(() => console.log(`${message.member.displayName} leveled to ${this.level}`));
             MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(() => console.log('reset xp'));
             const BotCommandsChannel = message.guild.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
             const coinEmoji = message.client.emojis.cache.find(emoji => emoji.name === 'Coin');
-            const embed = this.constructEmbed(`${this.name}, you are now level ${this.level}!`, `Congrats! Here is a reward: 5${coinEmoji}`, null);
-            this.addCash(message.member, 5, `Reward for leveling to ${this.level}`);
+            const embed = this.constructEmbed(`${message.member.displayName}, you are now level ${this.level}!`, `Congrats! Here is a reward: ${this.level}${coinEmoji}`, null);
+            this.addCash(message.member, this.level, `Reward for leveling to ${this.level}`);
             return BotCommandsChannel.send(embed);
         }
     }
     updateEconomyLog(member, memberName, amount, reason, incrementType) {
+        const coinEmoji = member.client.emojis.cache.find(emoji => emoji.name === 'Coin');
         const EconomyLogChannel = member.guild.channels.cache.find(channel => channel.id === ECONOMY_LOGGER_CHANNEL_ID);
-        const embed = this.constructEmbed(`${memberName}'s bank adjustment: ${incrementType}${amount}`, `Reason: ${reason}`);
+        const embed = this.constructEmbed(`${memberName}'s bank adjustment: ${incrementType}${amount}${coinEmoji}`, `Reason: ${reason}`);
         embed.setTimestamp();
         return EconomyLogChannel.send(embed);
     }
@@ -180,7 +222,7 @@ module.exports = class MemberInfo {
         const canvas = Canvas.createCanvas(1100, 1000);
         const ctx = canvas.getContext('2d');
         ctx.save();
-        const background = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/bank_template.png');
+        const background = await Canvas.loadImage(BANK_TEMPLATE_PNG);
         ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = '#ffffff';
         ctx.strokeRect(0, 0, canvas.width, canvas.height);
@@ -202,7 +244,7 @@ module.exports = class MemberInfo {
         ctx.font = applyText(canvas, 25);
         ctx.fillText('Here are your last 10 transactions', canvas.width / 2, 335);
         let yInterval = 0;
-        const coin = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/nfcoin.png');
+        const coin = await Canvas.loadImage(NF_COIN_PNG);
         for (let i = 0; i < 10; i++) {
             if (this.moneyledger[this.moneyledger.length - i - 1] === undefined) break;
             ctx.fillStyle = 'rgba(255, 255, 255, .35)';
@@ -210,7 +252,8 @@ module.exports = class MemberInfo {
             ctx.font = applyText(canvas, 20);
             ctx.textAlign = 'left';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(`${this.moneyledger[this.moneyledger.length - i - 1][0]}`, 110, 390 + yInterval);
+            const removedCoinString = _.replace(this.moneyledger[this.moneyledger.length - i - 1][0], '<:Coin:804465015359799357>', '');
+            ctx.fillText(`${removedCoinString}`, 110, 390 + yInterval);
             ctx.textAlign = 'right';
             if (this.moneyledger[this.moneyledger.length - i - 1][1] > 0) ctx.fillStyle = '#59ff00';
             else ctx.fillStyle = '#ff0000';
@@ -227,31 +270,32 @@ module.exports = class MemberInfo {
         return message.channel.send(attachment);
     }
     addCash(member, amount, reason) {
+        const coinEmoji = member.client.emojis.cache.find(emoji => emoji.name === 'Coin');
         const BotCommandsChannel = member.guild.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
         this.cash += amount;
         this.moneyledger.push([reason, amount]);
-        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, this.name, amount, reason, '+'));
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, member.displayName, amount, reason, '+'));
         MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger }).then(()=>console.log('updated ledger'));
-        const embed = this.constructEmbed(`${this.name}, ${amount} was added to your bank`, `Reason: ${reason}. \nYour total balance is now ${this.cash}`, null, null);
+        const embed = this.constructEmbed(`${member.displayName}, ${amount}${coinEmoji} was added to your bank`, `Reason: ${reason}. \nYour total balance is now ${this.cash}${coinEmoji}`, null, null);
         return BotCommandsChannel.send(embed);
     }
     removeCash(member, amount, reason) {
         this.cash -= amount;
         this.moneyledger.push([reason, -amount]);
-        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, this.name, amount, reason, '-'));
+        MemberData.findByIdAndUpdate(this._id, { cash: this.cash }).then(()=> this.updateEconomyLog(member, member.displayName, amount, reason, '-'));
         MemberData.findByIdAndUpdate(this._id, { moneyledger: this.moneyledger }).then(()=>console.log('updated ledger'));
     }
     setSteamId(message, args) {
         this.steamid = args[0];
-        const embed = this.constructEmbed(`${this.name}, your steam ID has been set: ${args[0]}`, '', null, null);
+        const embed = this.constructEmbed(`${message.member.displayName}, your steam ID has been set: ${args[0]}`, '', null, null);
         MemberData.findByIdAndUpdate(this._id, { steamid: args[0] });
         return message.channel.send(embed);
     }
-    giveWarning(message, reason) {
+    giveWarning(message, reason, specifiedMember) {
         this.warnings++;
         this.warningreasons = this.warningreasons.concat(`${message.member.displayName} issued a WARNING:\n*${reason}*  (${new Date().toLocaleString()})`);
-        const embed = this.constructEmbed(`${this.name}, you received a warning.`, `Reason: ${reason}`, null, null);
-        MemberData.findByIdAndUpdate(this._id, { warningreasons: this.warningreasons, warnings: this.warnings });
+        const embed = this.constructEmbed(`${specifiedMember.displayName}, you received a warning.`, `Reason: ${reason}`, null, null);
+        MemberData.findByIdAndUpdate(this._id, { warningreasons: this.warningreasons, warnings: this.warnings }).then(()=> console.log(`issued warning to ${specifiedMember.displayName}`));
         return message.channel.send(embed);
     }
     displayWarnings(message, member) {
@@ -275,15 +319,18 @@ module.exports = class MemberInfo {
             img: null,
             inline: false,
         });
-        const embed = this.constructEmbed(`${this.name}'s Warnings (${this.warnings}):`, reasons, null, embedFields, member.user.displayAvatarURL());
+        const embed = this.constructEmbed(`${member.displayName}'s Warnings (${this.warnings}):`, reasons, null, embedFields, member.user.displayAvatarURL());
         embed.setFooter(`Discord ID: ${this._id} | Steam ID: ${this.steamid}`);
         embed.setTimestamp(message.createdAt);
         return message.channel.send(embed);
 
     }
-    bet(message, amount) {
-        message;
-        amount;
+    returnTopRoleHierarchyColor(member) {
+        if (member.roles.cache.has(COMMITTEE_ROLE_ID)) return 'committee';
+        if (member.roles.cache.has(STAFF_ROLE_ID)) return 'staff';
+        if (member.roles.cache.has(MEMBER_ROLE_ID)) return 'member';
+        if (member.roles.cache.has(PROSPECT_ROLE_ID)) return 'prospect';
+        return 'hangaround';
     }
     async mute(message, specifiedMember, mutetime, reason) {
         this.mutecount++;

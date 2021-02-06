@@ -26,6 +26,6 @@ module.exports = {
 		const reasonsArray = args.splice(1, args.length);
 		let reasons = reasonsArray.toString();
 		reasons = reasons.replace(/,/g, ' ');
-		return message.client.memberinfo[specifiedMember.id].giveWarning(message, reasons);
+		return message.client.memberinfo[specifiedMember.id].giveWarning(message, reasons, specifiedMember);
 	},
 };

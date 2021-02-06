@@ -5,14 +5,13 @@ const {
 	MOD_ROLE_ID,
 } = require('../util/constants.js');
 module.exports = {
-	name: 'generatecash',
-	description: 'Generates cash (<2000) to a member [Mod use only]',
+	name: 'removecash',
+	description: 'remove cash from a member',
 	usage: '[@member] [amount] [reason]',
 	args: true,
 	cooldown: 5,
 	modOnly: true,
 	execute(message, args) {
-		const coinEmoji = message.client.emojis.cache.find(emoji => emoji.name === 'Coin');
 		if (message.member.roles.highest.comparePositionTo(message.guild.roles.cache.find(role => role.id === MOD_ROLE_ID)) < 0) return message.reply('You are not authorized to use this command.');
 		const specifiedMember = message.mentions.members.first();
 		if (!specifiedMember) return message.reply(`You did not submit a valid member to give cash.\nThe proper usage would be: \`${message.client.config.prefix}${this.name}\` ${this.usage}`);
@@ -21,13 +20,15 @@ module.exports = {
 			return message.channel.send(embed);
 		}
         const amount = Number(args[1]);
-        if (isNaN(amount) || !Number.isInteger(amount) || amount < 1 || amount > 1000000) {
+        if (isNaN(amount) || !Number.isInteger(amount) || amount < 1 || amount > 2000 || amount > message.client.memberinfo[specifiedMember.id].cash) {
 			const embed = constructEmbed('Invalid amount of cash', '', null, null);
 			return message.channel.send(embed);
 		}
 		const reasonsArray = args.splice(2, args.length);
 		let reasons = reasonsArray.toString();
 		reasons = reasons.replace(/,/g, ' ');
-		message.client.memberinfo[specifiedMember.id].addCash(specifiedMember, amount, `${message.member.displayName} generated you ${amount}${coinEmoji} for: ${reasons}`);
+        message.client.memberinfo[message.member.id].removeCash(specifiedMember, amount, `${amount} was removed by ${message.member.displayName} for ${reasons}`);
+        const embed = constructEmbed(`${amount} was removed from ${specifiedMember.displayName} by ${message.member.displayName} for ${reasons}`, '', null, null);
+			return message.channel.send(embed);
 	},
 };

@@ -13,6 +13,12 @@ const {
     SUBSCRIBER_ROLE_ID,
     HANGAROUND_ROLE_ID,
     STAFF_ROLE_ID,
+    COMMITTEE_ROLE_COLOR,
+	STAFF_ROLE_COLOR,
+	MEMBER_ROLE_COLOR,
+	PROSPECT_ROLE_COLOR,
+    HANGAROUND_ROLE_COLOR,
+    WELCOME_TEMPLATE_PNG,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
 const mongoose = require('mongoose');
@@ -217,7 +223,7 @@ exports.welcomeMessage = async (member) => {
     const canvas = Canvas.createCanvas(1100, 500);
     const ctx = canvas.getContext('2d');
     ctx.save();
-    const background = await Canvas.loadImage('C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/welcome_template.png');
+    const background = await Canvas.loadImage(WELCOME_TEMPLATE_PNG);
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = '#ffffff';
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
@@ -241,9 +247,6 @@ exports.welcomeMessage = async (member) => {
     const attachment = new MessageAttachment(canvas.toBuffer(), 'ranksImage.png');
     welcomeChannel.send(attachment);
 
-};
-exports.passiveIncome = () => {
-    // passive income
 };
 exports.checkInviter = (oldmember, newmember) => {
     if(!newmember.client.memberinfo[newmember.id]) return;
@@ -278,7 +281,7 @@ exports.WeeklyRolePayOut = (member, roleId) => {
         }
         break;
         case STAFF_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(50, 'Weekly Captain Income', member);
+            member.client.memberinfo[member.id].addRoleIncome(50, 'Weekly Staff Income', member);
         }
         break;
         case MEMBER_ROLE_ID: {
@@ -327,4 +330,12 @@ exports.startCron = (guild) => {
 exports.checkCash = (message, amount) => {
     if (message.client.memberinfo[message.member.id].cash < amount) return false;
     else return true;
+};
+
+exports.returnTopRoleHierarchyColor = (member) => {
+    if (member.roles.cache.has(COMMITTEE_ROLE_ID)) return COMMITTEE_ROLE_COLOR;
+    if (member.roles.cache.has(STAFF_ROLE_ID)) return STAFF_ROLE_COLOR;
+    if (member.roles.cache.has(MEMBER_ROLE_ID)) return MEMBER_ROLE_COLOR;
+    if (member.roles.cache.has(PROSPECT_ROLE_ID)) return PROSPECT_ROLE_COLOR;
+    return HANGAROUND_ROLE_COLOR;
 };

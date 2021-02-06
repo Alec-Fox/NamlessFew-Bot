@@ -28,6 +28,15 @@ module.exports = {
     MEMBER_ROLE_COLOR: '#70AD47',
     PROSPECT_ROLE_COLOR: '#607D8B',
     HANGAROUND_ROLE_COLOR: '#95A5A6',
+    LEVEL_TEMPLATE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/level_template.png',
+    BANK_TEMPLATE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/bank_template.png',
+    WELCOME_TEMPLATE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/templates/welcome_template.png',
+    NF_COIN_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/nfcoin.png',
+    HANGAROUND_ROLE_BADGE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/hangaround_role.png',
+    PROSPECT_ROLE_BADGE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/prospect_role.png',
+    MEMBER_ROLE_BADGE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/member_role.png',
+    STAFF_ROLE_BADGE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/staff_role.png',
+    COMMITTEE_ROLE_BADGE_PNG: 'C:/Users/Alec PC/Documents/GitHub/NameslessFewBot/NamlessFew-Bot/src/data/images/icons/committee_role.png',
     PASSIVE_INCOME_VALUES: {
         weekly: {
             '799750891485134868': 20, // COMMITTEE
