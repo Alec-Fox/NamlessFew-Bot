@@ -34,7 +34,7 @@ function createDeck() {
     deck = new Array();
     for (let i = 0; i < values.length; i++) {
         for (let x = 0; x < suits.length; x++) {
-            let weight = parseInt(values[i]);
+            let weight = parseInt(values[i], 10);
             if (weight > 11 && weight < 15) weight = 10;
             const card = { Value: values[i], Suit: suits[x], Weight: weight };
             deck.push(card);
