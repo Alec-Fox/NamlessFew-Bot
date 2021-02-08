@@ -112,6 +112,8 @@ async function dealCards(client, userID, player) {
 function endGame(client, userID, payout, member, gameover, won, draw) {
     if(payout > 0) client.memberinfo[userID].addCash(member, payout, `You won ${payout} from Blackjack`);
     if(payout < 0) client.memberinfo[userID].removeCash(member, Math.abs(payout), `You lost ${payout} from Blackjack`);
+    const outcome = won ? 'won' : 'lost';
+    client.memberinfo[userID].gamblingStats(outcome, client.memberinfo[userID].blackjack.bjBet);
     resetGame(client, userID, member, gameover, won, draw);
 }
 

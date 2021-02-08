@@ -61,7 +61,7 @@ exports.constructBlackjackEmbed = function(client, title, description, userID, i
 	description = description || '';
 	image = image || '';
 	const picType = thumbnail ? 'thumbnail' : 'image';
-	const color = 0xffff00;
+	const color = '0xffff00';
 	const message = {
 		color: color,
 		title: title,
