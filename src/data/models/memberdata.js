@@ -19,6 +19,7 @@ const memberDataSchema = mongoose.Schema({
     inviter: String,
     moneyledger: Array,
     gambling: Object,
+    blackjack: Object,
 });
 
 module.exports = mongoose.model('MemberData', memberDataSchema);

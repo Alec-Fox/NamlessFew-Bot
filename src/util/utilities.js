@@ -20,6 +20,7 @@ const {
     HANGAROUND_ROLE_COLOR,
     WELCOME_TEMPLATE_PNG,
     INACTIVE_ROLE_ID,
+    BOT_CHANNEL_ID,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
 const mongoose = require('mongoose');
@@ -51,6 +52,23 @@ exports.constructEmbed = (title, description, image, fields, thumbnail) => {
     }
     return embed;
 
+};
+
+exports.constructBlackjackEmbed = function(client, title, description, userID, image, thumbnail) {
+    const botChannel = client.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
+	// these are all optional parameters
+	title = title || '';
+	description = description || '';
+	image = image || '';
+	const picType = thumbnail ? 'thumbnail' : 'image';
+	const color = 0xffff00;
+	const message = {
+		color: color,
+		title: title,
+		description: description,
+	};
+	message[picType] = { url: image };
+	botChannel.send(new MessageEmbed(message));
 };
 
 /** API request options for Dungeon Top 10
@@ -119,6 +137,7 @@ exports.getAllGuildMembers = async (guild) => {
                     serverinvitesMember: [],
                     inviter : '',
                     gambling: { 'winstreak': 0, 'losestreak': 0, 'totalwins': 0, 'totalloses': 0, 'totalwinnings': 0, 'totallosings':0, 'highestwinstreak': 0, 'highestlosestreak': 0 },
+                    blackjack: { 'message': [], 'gameStarted': false, 'gameOver': true, 'bjBet': 0, 'player': { 'acesCount': 0, 'aces': 0, 'points': 0, 'hand':{} }, 'dealer': { 'acesCount': 0, 'aces': 0, 'points':0, 'hand':{} } },
                 });
                 newMemberData.save()
                 .then(newMember => Object.assign(guild.client.memberinfo, { [memberId]: new MemberInfo(newMember._doc) }))

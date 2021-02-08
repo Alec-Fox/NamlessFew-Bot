@@ -115,7 +115,7 @@ module.exports = class MemberInfo {
         ctx.fillText(`${this.level}`, 630, 170);
         const requiredXp = xpTable[this.level + 1];
         const leaderBoards = calculateLeaderBoards(message.client);
-        const myRank = _.findIndex(leaderBoards, function(el) { return el.includes(member.id);}) + 1;
+        const myRank = _.findIndex(leaderBoards, function(el) { return el.includes(member.displayName);}) + 1;
         ctx.font = applyText(canvas, 40);
         ctx.fillText('Rank:', 310, 170);
         ctx.textAlign = 'left';

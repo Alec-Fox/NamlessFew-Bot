@@ -125,6 +125,7 @@ client.on('guildMemberAdd', (member) => {
                 inviter: '',
                 moneyledger: [],
                 gambling: { winstreak: 0, losestreak: 0, totalwins: 0, totalloses: 0, totalwinnings: 0, totallosings: 0, highestwinstreak: 0, highestlosestreak: 0 },
+                blackjack: { message: [], gameStarted: false, gameOver: true, bjBet: 0, player: { acesCount: 0, aces: 0, points: 0, hand:{} }, dealer: { acesCount: 0, aces: 0, points:0, hand:{} } },
             });
             newMemberData.save()
                 .then(newMember => Object.assign(client.memberinfo, { [member.id]: new MemberInfo(newMember._doc) }))
