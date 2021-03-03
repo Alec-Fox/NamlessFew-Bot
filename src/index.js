@@ -15,7 +15,7 @@ const MuteData = require('./data/models/mutedata.js');
 const ActiveUsersData = require('./data/models/activeuserdata.js');
 const MemberInfo = require('./struct/MembersInfo.js');
 const MemberData = require('./data/models/memberdata.js');
-const { platformEmojis, rankEmojis, pingEmojis, regionEmojis, INACTIVE_ROLE_ID } = require('./util/constants.js');
+const { platformEmojis, rankEmojis, pingEmojis, regionEmojis, INACTIVE_ROLE_ID, NATIONALCHAPTER_ROLE_ID, HANGAROUND_ROLE_ID } = require('./util/constants.js');
 const roleClaim = require('./util/role-claim.js');
 const { giveXp } = require('./util/levelsystem.js');
 const commandFiles = readdirSync(join(__dirname, 'commands')).filter(file => file.endsWith('.js'));
@@ -58,12 +58,12 @@ client.once('ready', () => {
 
 client.on('message', message => {
     u.persistSuggestions(message);
+    if (message.author.bot || message.channel.type === 'dm' || !message.member || !message.client.memberinfo[message.member.id]) return;
     if (!client.activeUsersMap.has(message.member.id)) {
         client.activeUsersMap.set(message.member.id);
         ActiveUsersData.findByIdAndUpdate(message.guild.id, { activeUsersMap: client.activeUsersMap }).then(()=>console.log('updated activeUserMap'));
         message.member.roles.remove(INACTIVE_ROLE_ID);
     }
-    if (message.author.bot || message.channel.type === 'dm') return;
     giveXp(message);
     if (!message.content.startsWith(client.config.prefix)) return;
     const args = message.content.slice(client.config.prefix.length).split(/ +/);
@@ -135,6 +135,8 @@ client.on('guildMemberAdd', (member) => {
             Object.assign(client.memberinfo, { [member.id]: new MemberInfo(foundMember) });
         }
     });
+    member.roles.add(HANGAROUND_ROLE_ID);
+    member.roles.add(NATIONALCHAPTER_ROLE_ID);
     welcomeMessage(member);
     persistWelcomeInfo(client);
     trackInvites(member, client);

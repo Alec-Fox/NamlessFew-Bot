@@ -20,14 +20,14 @@ module.exports = {
 			return message.channel.send(embed);
 		}
         const amount = Number(args[1]);
-        if (isNaN(amount) || !Number.isInteger(amount) || amount < 1 || amount > 2000 || amount > message.client.memberinfo[specifiedMember.id].cash) {
+        if (isNaN(amount) || !Number.isInteger(amount) || amount < 1 || amount > message.client.memberinfo[specifiedMember.id].cash) {
 			const embed = constructEmbed('Invalid amount of cash', '', null, null);
 			return message.channel.send(embed);
 		}
 		const reasonsArray = args.splice(2, args.length);
 		let reasons = reasonsArray.toString();
 		reasons = reasons.replace(/,/g, ' ');
-        message.client.memberinfo[message.member.id].removeCash(specifiedMember, amount, `${amount} was removed by ${message.member.displayName} for ${reasons}`);
+        message.client.memberinfo[specifiedMember.id].removeCash(specifiedMember, amount, `${amount} was removed by ${message.member.displayName} for ${reasons}`);
         const embed = constructEmbed(`${amount} was removed from ${specifiedMember.displayName} by ${message.member.displayName} for ${reasons}`, '', null, null);
 			return message.channel.send(embed);
 	},

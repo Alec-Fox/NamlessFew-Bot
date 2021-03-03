@@ -153,22 +153,29 @@ module.exports = class MemberInfo {
             member.client.memberinfo[memberId].inviter = this._id;
             MemberData.findByIdAndUpdate(this._id, { serverinvites: this.serverinvites }).then(() => console.log(`added ${memberId} to ${this._id}'s invite count`));
             MemberData.findByIdAndUpdate(memberId, { inviter: this._id }).then(() => console.log(`added ${this._id} to ${memberId}'s as inviter`));
-            this.addCash(member, 10, `Reward for inviting ${member.displayName} to the server`);
+            const thisMember = member.guild.members.cache.find(memberfound => memberfound.id === this._id);
+            this.addCash(thisMember, 10, `Reward for inviting ${member.displayName} to the server`);
         }
     }
     addInviteProspect(member, memberId) {
         if(!this.serverinvitesProspect.includes(memberId)) {
             this.serverinvitesProspect.push(memberId);
             MemberData.findByIdAndUpdate(this._id, { serverinvitesProspect: this.serverinvitesProspect }).then(() => console.log(`added ${memberId} to ${this._id}'s inviteProspect count`));
-            this.addCash(member, 25, `Reward for inviting ${member.displayName} as a prospect`);
+            const thisMember = member.guild.members.cache.find(memberfound => memberfound.id === this._id);
+            this.addCash(thisMember, 25, `Reward for inviting ${member.displayName} as a prospect`);
         }
     }
     addInviteMember(member, memberId) {
         if(!this.serverinvitesMember.includes(memberId)) {
             this.serverinvitesMember.push(memberId);
             MemberData.findByIdAndUpdate(this._id, { serverinvitesMember: this.serverinvitesMember }).then(() => console.log(`added ${memberId} to ${this._id}'s inviteMember count`));
-            this.addCash(member, 50, `Reward for inviting ${member.displayName} as a member`);
+            const thisMember = member.guild.members.cache.find(memberfound => memberfound.id === this._id);
+            this.addCash(thisMember, 50, `Reward for inviting ${member.displayName} as a member`);
         }
+    }
+    setLevel(member, amount) {
+        this.level = amount;
+        MemberData.findByIdAndUpdate(this._id, { level: this.level }).then(() => console.log(`Set ${member.displayName} to ${this.level}`));
     }
     addExperience(message, amount) {
         this.experience += amount;
@@ -248,7 +255,7 @@ module.exports = class MemberInfo {
             ctx.font = applyText(canvas, 20);
             ctx.textAlign = 'left';
             ctx.fillStyle = '#ffffff';
-            const removedCoinString = _.replace(this.moneyledger[this.moneyledger.length - i - 1][0], '<:Coin:804465015359799357>', '');
+            const removedCoinString = _.replace(this.moneyledger[this.moneyledger.length - i - 1][0], '<:Coin:816175994708295690>', '');
             ctx.fillText(`${removedCoinString}`, 110, 390 + yInterval);
             ctx.textAlign = 'right';
             if (this.moneyledger[this.moneyledger.length - i - 1][1] > 0) ctx.fillStyle = '#59ff00';

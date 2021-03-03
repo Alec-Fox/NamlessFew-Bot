@@ -10,7 +10,8 @@ const {
 } = require('../util/gambling.js');
 module.exports = {
 	name: 'leaderboards',
-	description: 'Display Namesless Few Leaderboards',
+    description: 'Display Namesless Few Leaderboards',
+    aliases: ['leaderboard', 'ranks'],
 	usage: '',
 	cooldown: 5,
 	modOnly: false,

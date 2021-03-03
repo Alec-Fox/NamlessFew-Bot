@@ -1,6 +1,7 @@
 module.exports = {
 	name: 'level',
 	description: 'Display your server level.',
+	aliases: ['lvl'],
 	usage: '',
     cooldown: 1,
 	modOnly: false,

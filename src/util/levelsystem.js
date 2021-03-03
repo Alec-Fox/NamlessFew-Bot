@@ -5,7 +5,7 @@ exports.giveXp = (message) => {
 };
 
 exports.calculateRequiredXpTable = () => {
-    const L = 100;
+    const L = 200;
     const levels = [];
     const value = [0];
     const xp = [];

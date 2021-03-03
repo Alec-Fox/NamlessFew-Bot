@@ -9,7 +9,7 @@ const addReactions = (message, reactions) => {
 module.exports = async (client, id, text, reactions = []) => {
     const channel = await client.channels.fetch(id);
             const fetchedMessages = await channel.messages.fetch();
-            channel.bulkDelete(fetchedMessages);
+            channel.bulkDelete(fetchedMessages).catch(error => {console.error('Failed to delete the message:', error);});
             channel.send(text).then((message) => {
                 addReactions(message, reactions);
             });

@@ -164,7 +164,7 @@ function checkStayOutcome(client, dealerPoints, playerPoints, userName, bet, use
         }
     }
 }
-
+// draws the pokertable image with canvas from client.memberinfo[userid].blackjack
 const drawImage = async (client, userID, member, gameover, won, draw) => {
     const botChannel = client.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
     const applyText = (canvas, size) => {
@@ -355,7 +355,7 @@ function maybeRestoreOldDeck(client, userID) {
 **/
 exports.hitMe = function(client, userID, member) {
     maybePopulateBlackjackUserFields(client, userID, member.displayName);
-    if (client.memberinfo[userID].blackjack.player.points < 21 && !client.memberinfo[userID].blackjack.bjGameOver) {
+    if (client.memberinfo[userID].blackjack.player.points < 21 && client.memberinfo[userID].blackjack.player.points > 0 && !client.memberinfo[userID].blackjack.bjGameOver) {
         maybeRestoreOldDeck(client, userID);
         dealCards(client, userID, 'player');
         const oldMessage = client.memberinfo[userID].blackjack.message;
@@ -412,7 +412,7 @@ exports.checkUserData = function(client, userID, userName, args, member) {
         constructBlackjackEmbed(client, userName + ' you already have a game in progress!', null, userID, null);
     }
 };
-
+// check to see if the dealer shout take another hit
 function dealerShouldHit(client, userID) {
     const dealerPoints = client.memberinfo[userID].blackjack.dealer.points;
     const userPoints = client.memberinfo[userID].blackjack.player.points;

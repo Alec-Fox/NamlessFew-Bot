@@ -21,6 +21,11 @@ const {
     WELCOME_TEMPLATE_PNG,
     INACTIVE_ROLE_ID,
     BOT_CHANNEL_ID,
+    HIERARCHY_CHANNEL_ID,
+    RULEBOOK_CHANNEL_ID,
+    ROLELIST_CHANNEL_ID,
+    ECONOMY_INFO_CHANNEL_ID,
+    COMMAND_HELP_CHANNEL_ID,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
 const mongoose = require('mongoose');
@@ -175,9 +180,10 @@ exports.persistSuggestions = (message) => {
         .then(() => message.react('👎'))
         .then(() => message.react('❌'))
         .catch(() => console.error('One of the emojis failed to react.'));
+    /**
     if (message.client.info.last_suggestion_message !== '') {
         try {
-            message.client.info.last_suggestion_message.delete();
+            message.client.info.last_suggestion_message.delete().catch(error => {console.error('Failed to delete the message:', error);});
         }
         catch (error) {
             console.log(error);
@@ -192,22 +198,24 @@ exports.persistSuggestions = (message) => {
         .catch(error => {
             console.log(error);
         });
+    */
 };
 
 exports.persistWelcomeInfo = (client) => {
     if (client.info.last_welcome_message_info !== '') {
         try {
-            client.info.last_welcome_message_info.delete();
+            client.info.last_welcome_message_info.delete().catch(error => {console.error('Failed to delete the message:', error);});
         }
         catch (error) {
             console.log(error);
         }
     }
-    const embed = this.constructEmbed('', `To learn more about us and our server, go to #about-us
-    \nTo learn about the rules we expect you to follow, go to #rulebook 
+    const embed = this.constructEmbed('', `To learn more about us and our server, go to <#${client.channels.cache.find(channel => channel.id === HIERARCHY_CHANNEL_ID).id}> 
+    \nTo learn about the rules we expect you to follow, go to <#${client.channels.cache.find(channel => channel.id === RULEBOOK_CHANNEL_ID).id}>
+    \nTo learn about the roles we offer, go to <#${client.channels.cache.find(channel => channel.id === ROLELIST_CHANNEL_ID).id}> 
     \nTo assign yourself some roles, go to <#${client.channels.cache.find(channel => channel.id === ROLE_SELECTION_CHANNEL_ID).id}> 
-    \nTo learn about our economy, go to #economy-help 
-    \nTo learn about the bots and commands, go to #commands-help
+    \nTo learn about our economy, go to <#${client.channels.cache.find(channel => channel.id === ECONOMY_INFO_CHANNEL_ID).id}>
+    \nTo learn about the bots and commands, go to <#${client.channels.cache.find(channel => channel.id === COMMAND_HELP_CHANNEL_ID).id}>
     \nIf you have any other questions, you're more than welcome to ask any Member or Committee Member. Have fun and happy gaming!`);
     const welcomeChannel = client.channels.cache.find(channel => channel.id === WELCOME_CHANNEL_ID);
     welcomeChannel.send(embed).then((msg) => {
@@ -299,7 +307,7 @@ exports.trackInvites = async (member, client) => {
 exports.WeeklyRolePayOut = (member, roleId) => {
     switch (roleId) {
         case COMMITTEE_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(100, 'Weekly Committee Income', member);
+            member.client.memberinfo[member.id].addRoleIncome(200, 'Weekly Committee Income', member);
         }
         break;
         case STAFF_ROLE_ID: {
@@ -324,24 +332,24 @@ exports.WeeklyRolePayOut = (member, roleId) => {
 exports.DailyRolePayOut = (member, roleId) => {
     switch (roleId) {
         case FOLLOWER_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(1, 'Daily Follower Income', member);
+            member.client.memberinfo[member.id].addRoleIncome(2, 'Daily Follower Income', member);
         }
         break;
         case SUBSCRIBER_ROLE_ID: {
-            member.client.memberinfo[member.id].addRoleIncome(5, 'Daily Subscriber Income', member);
+            member.client.memberinfo[member.id].addRoleIncome(8, 'Daily Subscriber Income', member);
         }
         break;
     }
 };
 
 exports.startCron = (guild) => {
-    cron.schedule('10 13 * * *', () => {
+    cron.schedule('00 12 * * *', () => {
         guild.members.cache.forEach(member => member.roles.cache.forEach(role => this.DailyRolePayOut(member, role.id)));
     }, {
         scheduled: true,
         timezone: 'America/New_York',
     });
-    cron.schedule('15 13 * * 4', () => {
+    cron.schedule('00 12 * * 5', () => {
         guild.members.cache.forEach(member => member.roles.cache.forEach(role => this.WeeklyRolePayOut(member, role.id)));
     }, {
         scheduled: true,

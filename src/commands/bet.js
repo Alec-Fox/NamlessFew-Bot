@@ -8,7 +8,7 @@ module.exports = {
 	name: 'bet',
 	description: 'Gamble coins for a 50% chance to double up.',
 	usage: '[amount]',
-    cooldown: 1,
+    cooldown: 3,
     args: true,
 	modOnly: false,
 	execute(message, args) {
@@ -24,7 +24,6 @@ module.exports = {
         }
         message.client.memberinfo[message.member.id].removeCash(message.member, amount, `You gambled and lost ${amount}`);
         const outcome = getRand(0, 2);
-        console.log(outcome);
         if(outcome) {
             message.client.memberinfo[message.member.id].addCash(message.member, (amount * 2), `You won ${amount * 2} from gambling!`);
             message.client.memberinfo[message.member.id].gamblingStats('won', amount);
