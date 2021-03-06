@@ -5,6 +5,7 @@ const {
 module.exports = {
 	name: 'givecash',
 	description: 'Gives cash to another member',
+	aliases: ['give', 'pay', 'givemoney'],
 	usage: '[@member] [amount]',
 	args: true,
 	cooldown: 5,

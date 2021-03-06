@@ -1,6 +1,7 @@
 const {
     MessageEmbed,
     MessageAttachment,
+    WebhookClient,
 } = require('discord.js');
 const {
     SUGGESTIONS_CHANNEL_ID,
@@ -26,6 +27,9 @@ const {
     ROLELIST_CHANNEL_ID,
     ECONOMY_INFO_CHANNEL_ID,
     COMMAND_HELP_CHANNEL_ID,
+    SLEEPY_ID,
+    SLEEPY_MESSAGE_LOG_CHANNEL_ID,
+    MODERATOR_CHANNEL_ID,
 } = require('./constants.js');
 const MemberInfo = require('../struct/MembersInfo.js');
 const mongoose = require('mongoose');
@@ -34,6 +38,8 @@ const MemberData = require('../data/models/memberdata.js');
 const SuggestionData = require('../data/models/suggestionsdata.js');
 const ActiveUsersData = require('../data/models/activeuserdata.js');
 const cron = require('node-cron');
+let sleepyMessageCounter = 0;
+let sleepyMessageCountLastMessageId = '';
 /**
  * Returns an embed object.
  *
@@ -384,4 +390,36 @@ exports.returnTopRoleHierarchyColor = (member) => {
     if (member.roles.cache.has(MEMBER_ROLE_ID)) return MEMBER_ROLE_COLOR;
     if (member.roles.cache.has(PROSPECT_ROLE_ID)) return PROSPECT_ROLE_COLOR;
     return HANGAROUND_ROLE_COLOR;
+};
+
+exports.sleepyMessageLog = (message) => {
+    if (message.member.id !== SLEEPY_ID) return;
+    sleepyMessageCounter++;
+    if(sleepyMessageCounter < 2) {
+        message.client.channels.cache.get(SLEEPY_MESSAGE_LOG_CHANNEL_ID).send(`Sleepy's message count: ${sleepyMessageCounter}`)
+        .then((msg) => {
+            sleepyMessageCountLastMessageId = msg.id;
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    }
+    if (sleepyMessageCounter > 1 && sleepyMessageCountLastMessageId !== '') {
+    message.client.channels.cache.get(SLEEPY_MESSAGE_LOG_CHANNEL_ID).messages.fetch(sleepyMessageCountLastMessageId).then(sleepyMessage => {
+         sleepyMessage.edit(`Sleepy's message count: ${sleepyMessageCounter}`);
+    })
+    .catch(error => {
+        console.log(error);
+    });
+    }
+};
+
+exports.webHookSendMessage = (webhookMessage) => {
+    const webhook = new WebhookClient('817715636523368460', 'GEyZdT4aX_fM9dkdijxl3_tNBiVbua4qSK3BdSKuVFVY8GozYkVC3JGDVNWWRe1T4uSb');
+    webhook.send(webhookMessage);
+};
+
+exports.sendMemberLeaveMessage = (member) => {
+    const modChannel = member.guild.channels.cache.find(channel => channel.id === MODERATOR_CHANNEL_ID);
+    modChannel.send(`${member.user.tag} has left the Server.`);
 };

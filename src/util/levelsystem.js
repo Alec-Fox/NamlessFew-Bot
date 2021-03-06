@@ -26,7 +26,7 @@ exports.calculateLeaderBoards = (client) => {
     const guild = client.guilds.cache.first();
     Object.keys(client.memberinfo).forEach(key => {
         const guildMember = guild.members.cache.find(member => member.id === key);
-        sortableLevels.push([guildMember.displayName, client.memberinfo[key].level]);
+        if(guildMember) {sortableLevels.push([guildMember.displayName, client.memberinfo[key].level]);}
     });
     sortableLevels.sort(function(a, b) {
         return b[1] - a[1];

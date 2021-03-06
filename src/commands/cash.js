@@ -1,7 +1,7 @@
 module.exports = {
 	name: 'cash',
 	description: 'Displays your total cash',
-	aliases: ['bank'],
+	aliases: ['bank', 'money'],
 	usage: '',
 	cooldown: 5,
 	modOnly: false,

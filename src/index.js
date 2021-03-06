@@ -8,9 +8,10 @@ const client = new AlecClient({
     token: process.env.DISCORD_TOKEN,
     prefix: process.env.DISCORD_PREFIX,
 });
+const { twitchWebhooks } = require('./util/twitchwebhook.js');
 const u = require('./util/utilities.js');
 const { manageVoiceChannel } = require('./util/voice.js');
-const { getAllGuildMembers, getLastSuggestionMessageOnRestart, persistWelcomeInfo, welcomeMessage, trackInvites, checkInviter, startCron } = require('./util/utilities.js');
+const { getAllGuildMembers, persistWelcomeInfo, welcomeMessage, trackInvites, checkInviter, startCron, sleepyMessageLog, sendMemberLeaveMessage } = require('./util/utilities.js');
 const MuteData = require('./data/models/mutedata.js');
 const ActiveUsersData = require('./data/models/activeuserdata.js');
 const MemberInfo = require('./struct/MembersInfo.js');
@@ -27,7 +28,6 @@ for (const file of commandFiles) {
 client.once('ready', () => {
     const guild = client.guilds.cache.first();
     console.log(`${client.user.username} READY!`);
-    getLastSuggestionMessageOnRestart(client);
     getAllGuildMembers(guild);
     ActiveUsersData.findById(guild.id).lean().exec(function(err, activeUserDataMap) {
         if (err) console.log(err);
@@ -54,11 +54,13 @@ client.once('ready', () => {
     roleClaim(client, regionEmojis, '**React to choose a region role:**\n');
     roleClaim(client, pingEmojis, '**React to choose a ping role:**\n');
     roleClaim(client, rankEmojis, '**React to choose a rank role:**\n');
+    twitchWebhooks();
 });
 
 client.on('message', message => {
     u.persistSuggestions(message);
     if (message.author.bot || message.channel.type === 'dm' || !message.member || !message.client.memberinfo[message.member.id]) return;
+    sleepyMessageLog(message);
     if (!client.activeUsersMap.has(message.member.id)) {
         client.activeUsersMap.set(message.member.id);
         ActiveUsersData.findByIdAndUpdate(message.guild.id, { activeUsersMap: client.activeUsersMap }).then(()=>console.log('updated activeUserMap'));
@@ -144,6 +146,9 @@ client.on('guildMemberAdd', (member) => {
 client.on('guildMemberUpdate', (oldMember, newMember) => {
     checkInviter(oldMember, newMember);
 
+});
+client.on('guildMemberRemove', (member) => {
+    sendMemberLeaveMessage(member);
 });
 client.on('inviteCreate', async (invite) => {
     client.guildInvites.set(invite.guild.id, await invite.guild.fetchInvites());

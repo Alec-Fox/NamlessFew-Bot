@@ -4,6 +4,12 @@
     "discord.js": "^12.5.1",
     "lodash": "^4.17.20",
     "mongoose": "^5.11.14",
-    "node-cron": "^2.0.3"
+    "node-cron": "^2.0.3",
+    "readline-sync": "^1.4.10",
+    "twitch": "^4.5.0",
+    "twitch-eventsub": "^4.5.0",
+    "twitch-eventsub-ngrok": "^4.5.0",
+    "twitch-webhooks": "^4.5.0",
+    "twitch-webhooks-ngrok": "^4.5.0"
   }
 }

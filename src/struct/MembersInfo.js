@@ -188,11 +188,7 @@ module.exports = class MemberInfo {
             this.experience = 0;
             MemberData.findByIdAndUpdate(this._id, { level: this.level }).then(() => console.log(`${message.member.displayName} leveled to ${this.level}`));
             MemberData.findByIdAndUpdate(this._id, { experience: this.experience }).then(() => console.log('reset xp'));
-            const BotCommandsChannel = message.guild.channels.cache.find(channel => channel.id === BOT_CHANNEL_ID);
-            const coinEmoji = message.client.emojis.cache.find(emoji => emoji.name === 'Coin');
-            const embed = this.constructEmbed(`${message.member.displayName}, you are now level ${this.level}!`, `Congrats! Here is a reward: ${this.level}${coinEmoji}`, null);
             this.addCash(message.member, this.level, `Reward for leveling to ${this.level}`);
-            return BotCommandsChannel.send(embed);
         }
     }
     updateEconomyLog(member, memberName, amount, reason, incrementType) {
